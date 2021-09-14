@@ -2,12 +2,12 @@ import { parseCookies, concatCookies } from "./utils/cookie.js";
 import encode from "./utils/encode.js";
 import fetch, { Response } from "node-fetch";
 import { URLSearchParams } from "url";
-import { pubKeyProps, loginProps } from "./interface";
+import { pubKeyProps, cacheProps, infoProps, loginProps } from "./interface";
 
 const username = "3190100181";
 const password = "lyntyp512940";
 
-const login = async () => {
+const login = async (): Promise<loginProps> => {
   let cookiesArr: any[] = [];
   const response1 = await fetch(
     "https://healthreport.zju.edu.cn/uc/wap/login?redirect=https%3A%2F%2Fhealthreport.zju.edu.cn%2Fncov%2Fwap%2Fdefault%2Findex",
@@ -57,7 +57,27 @@ const login = async () => {
       body: params,
     }
   );
-  if (response3.ok) console.log(response3);
+
+  if (!response3.headers.get("set-cookie")) {
+    console.log("👍浙大通行证登录成功");
+    // cookiesArr.push(
+    //   parseCookies(response3.headers.get("set-cookie")).filter(
+    //     ({ name }) =>
+    //       name !== "_pm0" && name !== "CASPRIVACY" && name !== "JSESSIONID"
+    //   )
+    // );
+    const html = await response3.text();
+    const old_info_tmp: string = html.match(/oldInfo:.+?"id".+?}/)![0].slice(9);
+    const def_tmp: string = html.match(/def = {.+?};/)![0].slice(6, -1);
+    const name: string = html.match(/realname: ".+?"/)![0].slice(11, -1);
+    const number: string = html.match(/number: '.+?'/)![0].slice(9, -1);
+    const old_info: infoProps = JSON.parse(old_info_tmp);
+    const def: infoProps = JSON.parse(def_tmp);
+    return {
+      cache: { old_info, def, personal_info: { name, number } },
+      cookiesArr,
+    }; //获取缓存信息并返回
+  } else throw new Error("🙀浙大通行证登录失败");
 };
 
 export default login;
