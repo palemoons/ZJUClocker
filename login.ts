@@ -4,8 +4,8 @@ import fetch, { Response } from "node-fetch";
 import { URLSearchParams } from "url";
 import { pubKeyProps, cacheProps, infoProps, loginProps } from "./interface";
 
-const username = "3190100181";
-const password = "lyntyp512940";
+const username = "username";
+const password = "password";
 
 const login = async (): Promise<loginProps> => {
   let cookiesArr: any[] = [];
