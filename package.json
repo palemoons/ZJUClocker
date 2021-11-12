@@ -2,8 +2,8 @@
   "dependencies": {
     "@types/node": "^16.9.1",
     "@types/set-cookie-parser": "^2.4.1",
+    "axios": "^0.24.0",
     "big-integer": "^1.6.48",
-    "node-fetch": "^3.0.0",
     "set-cookie-parser": "^2.4.8"
   },
   "type": "module"

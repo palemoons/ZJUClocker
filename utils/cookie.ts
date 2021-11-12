@@ -6,7 +6,7 @@ interface cookieProps {
 }
 
 export function parseCookies(headers: string | null) {
-  const cookiesArr: string[] = headers ? splitCookiesString(headers) : [];
+  const cookiesArr: string[] = splitCookiesString(headers!);
   return parse(cookiesArr).map(({ name, value }) => ({ name, value })); //拿出cookie中的name, value值
 }
 

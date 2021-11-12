@@ -25,6 +25,6 @@ export interface infoProps {
   created?: number;
   gwszdd?: string;
   szgjcs?: string;
-  "jrdqtlqk[]"?: number;
-  "jrdqjcqk[]"?: number;
+  'jrdqtlqk[]'?: number;
+  'jrdqjcqk[]'?: number;
 }
