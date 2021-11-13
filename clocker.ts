@@ -45,4 +45,5 @@ const clocker = async (): Promise<string> => {
   const new_info = newForm(cache);
   return await submitForm(new_info, cookiesArr);
 };
-export default clocker;
+
+clocker();
