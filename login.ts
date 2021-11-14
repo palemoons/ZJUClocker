@@ -46,7 +46,7 @@ const login = async (): Promise<loginProps> => {
   params.append('authcode', '');
   params.append('execution', execution);
 
-  const response3 = await http({
+  let response3 = await http({
     url: 'https://zjuam.zju.edu.cn/cas/login?service=https%3A%2F%2Fhealthreport.zju.edu.cn%2Fa_zju%2Fapi%2Fsso%2Findex%3Fredirect%3Dhttps%253A%252F%252Fhealthreport.zju.edu.cn%252Fncov%252Fwap%252Fdefault%252Findex%26from%3Dwap',
     method: 'POST',
     headers: {
@@ -56,10 +56,10 @@ const login = async (): Promise<loginProps> => {
     params: params,
     timeout: 5000,
   });
-  if (!response3.headers['set-cookie']) {
-    console.log('👍浙大通行证登录成功');
-
-    const response4 = await http({
+  while (response3.headers['set-cookie']) {
+    console.log('🙀浙大通行证登录失败');
+    console.log('😕重新登录中...');
+    response3 = await http({
       url: 'https://zjuam.zju.edu.cn/cas/login?service=https%3A%2F%2Fhealthreport.zju.edu.cn%2Fa_zju%2Fapi%2Fsso%2Findex%3Fredirect%3Dhttps%253A%252F%252Fhealthreport.zju.edu.cn%252Fncov%252Fwap%252Fdefault%252Findex%26from%3Dwap',
       method: 'POST',
       headers: {
@@ -68,29 +68,40 @@ const login = async (): Promise<loginProps> => {
       },
       params: params,
       timeout: 5000,
-      maxRedirects: 0,
-      validateStatus: function (status) {
-        return status >= 200 && status < 400;
-      },
     });
-    cookiesArr.push(
-      ...parseCookies(response4.headers['set-cookie']!.join()).filter(
-        ({ name }) => name !== '_pm0' && name !== 'CASPRIVACY'
-      )
-    );
-    
-    
-    const html = await response3.data;
-    const old_info_tmp: string = html.match(/oldInfo:.+?\n/)![0].slice(9, -2);
-    const def_tmp: string = html.match(/def = {.+?};/)![0].slice(6, -1);
-    const name: string = html.match(/realname: ".+?"/)![0].slice(11, -1);
-    const number: string = html.match(/number: '.+?'/)![0].slice(9, -1);
-    const old_info: infoProps = JSON.parse(old_info_tmp);
-    const def: infoProps = JSON.parse(def_tmp);
-    return {
-      cache: { old_info, def, personal_info: { name, number } },
-      cookiesArr,
-    }; //获取缓存信息并返回
-  } else throw new Error('🙀浙大通行证登录失败');
+  }
+  console.log('👍浙大通行证登录成功');
+
+  const response4 = await http({
+    url: 'https://zjuam.zju.edu.cn/cas/login?service=https%3A%2F%2Fhealthreport.zju.edu.cn%2Fa_zju%2Fapi%2Fsso%2Findex%3Fredirect%3Dhttps%253A%252F%252Fhealthreport.zju.edu.cn%252Fncov%252Fwap%252Fdefault%252Findex%26from%3Dwap',
+    method: 'POST',
+    headers: {
+      Cookie: concatCookies(cookiesArr),
+      'Content-type': 'application/x-www-form-urlencoded',
+    },
+    params: params,
+    timeout: 5000,
+    maxRedirects: 0,
+    validateStatus: function (status) {
+      return status >= 200 && status < 400;
+    },
+  });
+  cookiesArr.push(
+    ...parseCookies(response4.headers['set-cookie']!.join()).filter(
+      ({ name }) => name !== '_pm0' && name !== 'CASPRIVACY'
+    )
+  );
+
+  const html = await response3.data;
+  const old_info_tmp: string = html.match(/oldInfo:.+?\n/)![0].slice(9, -2);
+  const def_tmp: string = html.match(/def = {.+?};/)![0].slice(6, -1);
+  const name: string = html.match(/realname: ".+?"/)![0].slice(11, -1);
+  const number: string = html.match(/number: '.+?'/)![0].slice(9, -1);
+  const old_info: infoProps = JSON.parse(old_info_tmp);
+  const def: infoProps = JSON.parse(def_tmp);
+  return {
+    cache: { old_info, def, personal_info: { name, number } },
+    cookiesArr,
+  }; //获取缓存信息并返回
 };
 export default login;
